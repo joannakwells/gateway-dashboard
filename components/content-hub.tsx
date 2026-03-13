@@ -34,7 +34,7 @@ const defaultItem = {
 };
 
 export function ContentHub({ initialItems, users, campaigns: initialCampaigns }: Props) {
-  const [items, setItems] = useState(initialItems);
+  const [items, setItems] = useState(() => applyContentOverrides(initialItems));
   const [campaigns, setCampaigns] = useState(initialCampaigns);
   const [query, setQuery] = useState("");
   const [ownerFilter, setOwnerFilter] = useState("");
@@ -47,7 +47,7 @@ export function ContentHub({ initialItems, users, campaigns: initialCampaigns }:
   useEffect(() => { setItems(applyContentOverrides(initialItems)); }, [initialItems]);
 
   const filtered = useMemo(() => {
-    return items.filter((item) => {
+    return applyContentOverrides(items).filter((item) => {
       const matchQuery =
         item.title.toLowerCase().includes(query.toLowerCase()) ||
         item.brief.toLowerCase().includes(query.toLowerCase());
