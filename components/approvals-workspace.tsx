@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { applyContentOverrides } from "@/lib/client-overrides";
 import { statusTone } from "@/lib/utils";
 import type { Approval, Comment, ContentItem, User } from "@/lib/types";
 
@@ -15,10 +16,11 @@ export function ApprovalsWorkspace({
   users: User[];
   comments: Comment[];
 }) {
+  const allContentItems = applyContentOverrides(contentItems);
   const [approvals, setApprovals] = useState(initialApprovals);
   const [filter, setFilter] = useState("");
   const [draft, setDraft] = useState({
-    contentItemId: contentItems[0]?.id ?? "",
+    contentItemId: allContentItems[0]?.id ?? "",
     designStatus: "Needs brief",
     reviewerId: users[0]?.id ?? "",
     requestedEdits: "",
@@ -111,13 +113,11 @@ export function ApprovalsWorkspace({
         <h3 className="text-lg font-semibold text-bark">New approval request</h3>
         <form className="mt-5 space-y-3" onSubmit={createApproval}>
           <select className="field" value={draft.contentItemId} onChange={(e) => setDraft({ ...draft, contentItemId: e.target.value })}>
-            {contentItems.map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}
+            <option value="">Select content item</option>
+            {allContentItems.map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}
           </select>
           <select className="field" value={draft.designStatus} onChange={(e) => setDraft({ ...draft, designStatus: e.target.value })}>
             {["Needs brief", "In progress", "Ready for review", "Revision requested", "Approved"].map((status) => <option key={status} value={status}>{status}</option>)}
-          </select>
-          <select className="field" value={draft.reviewerId} onChange={(e) => setDraft({ ...draft, reviewerId: e.target.value })}>
-            {users.map((user) => <option key={user.id} value={user.id}>{user.name}</option>)}
           </select>
           <input className="field" value={draft.versionLabel} onChange={(e) => setDraft({ ...draft, versionLabel: e.target.value })} placeholder="Version label" />
           <textarea className="field min-h-32" value={draft.requestedEdits} onChange={(e) => setDraft({ ...draft, requestedEdits: e.target.value })} placeholder="Requested edits" />

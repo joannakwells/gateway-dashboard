@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { Search, Trash2 } from "lucide-react";
-import { applyContentOverrides } from "@/lib/client-overrides";
+import { addNewContentItem, applyContentOverrides } from "@/lib/client-overrides";
 import { formatDate, statusTone } from "@/lib/utils";
 import type { Campaign, ContentItem, User } from "@/lib/types";
 
@@ -78,6 +78,7 @@ export function ContentHub({ initialItems, users, campaigns: initialCampaigns }:
       body: JSON.stringify({ ...draft, campaignId })
     });
     const item = (await response.json()) as ContentItem;
+    addNewContentItem(item);
     setItems((current) => [item, ...current]);
     setDraft({ ...defaultItem });
     setNewCampaignName("");
