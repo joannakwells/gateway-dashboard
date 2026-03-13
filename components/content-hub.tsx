@@ -116,7 +116,7 @@ export function ContentHub({ initialItems, users, campaigns }: Props) {
                   </td>
                   <td className="px-5 py-4"><span className={`badge ${statusTone(item.status)}`}>{item.status}</span></td>
                   <td className="px-5 py-4">{item.contentType}</td>
-                  <td className="px-5 py-4">{item.ownerName || users.find((user) => user.id === item.ownerId)?.name ?? "—"}</td>
+                  <td className="px-5 py-4">{item.ownerName || (users.find((user) => user.id === item.ownerId)?.name ?? "—")}</td>
                   <td className="px-5 py-4">{formatDate(item.dueDate)}</td>
                   <td className="px-5 py-4">{item.channel}</td>
                   <td className="px-5 py-4"><span className={`badge ${statusTone(item.priority)}`}>{item.priority}</span></td>
