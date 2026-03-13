@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { Search, Trash2 } from "lucide-react";
+import { applyContentOverrides } from "@/lib/client-overrides";
 import { formatDate, statusTone } from "@/lib/utils";
 import type { Campaign, ContentItem, User } from "@/lib/types";
 
@@ -43,7 +44,7 @@ export function ContentHub({ initialItems, users, campaigns: initialCampaigns }:
   const [newCampaignName, setNewCampaignName] = useState("");
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => { setItems(initialItems); }, [initialItems]);
+  useEffect(() => { setItems(applyContentOverrides(initialItems)); }, [initialItems]);
 
   const filtered = useMemo(() => {
     return items.filter((item) => {

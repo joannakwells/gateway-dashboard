@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { setContentOverride } from "@/lib/client-overrides";
 import type { Campaign, Comment, ContentItem, Task, User } from "@/lib/types";
 
 export function ContentDetail({
@@ -29,6 +30,7 @@ export function ContentDetail({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(draft)
       });
+      setContentOverride(item.id, draft);
       router.push("/content");
       router.refresh();
     } finally {
