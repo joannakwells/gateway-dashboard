@@ -46,17 +46,25 @@ export function ContentHub({ initialItems, users, campaigns: initialCampaigns }:
 
   useEffect(() => { setItems(applyContentOverrides(initialItems)); }, [initialItems]);
 
+  const resolvedItems = useMemo(() => applyContentOverrides(items), [items]);
+
+  const ownerNames = useMemo(() => {
+    const names = resolvedItems.map((item) => item.ownerName || users.find((u) => u.id === item.ownerId)?.name || "").filter(Boolean);
+    return [...new Set(names)].sort();
+  }, [resolvedItems, users]);
+
   const filtered = useMemo(() => {
-    return applyContentOverrides(items).filter((item) => {
+    return resolvedItems.filter((item) => {
+      const ownerName = item.ownerName || users.find((u) => u.id === item.ownerId)?.name || "";
       const matchQuery =
         item.title.toLowerCase().includes(query.toLowerCase()) ||
         item.brief.toLowerCase().includes(query.toLowerCase());
-      const matchOwner = !ownerFilter || item.ownerId === ownerFilter;
+      const matchOwner = !ownerFilter || ownerName === ownerFilter;
       const matchStatus = !statusFilter || item.status === statusFilter;
       const matchChannel = !channelFilter || item.channel === channelFilter;
       return matchQuery && matchOwner && matchStatus && matchChannel;
     });
-  }, [items, query, ownerFilter, statusFilter, channelFilter]);
+  }, [resolvedItems, users, query, ownerFilter, statusFilter, channelFilter]);
 
   async function createItem(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -100,7 +108,7 @@ export function ContentHub({ initialItems, users, campaigns: initialCampaigns }:
           </div>
           <select className="field max-w-44" value={ownerFilter} onChange={(e) => setOwnerFilter(e.target.value)}>
             <option value="">All owners</option>
-            {users.map((user) => <option key={user.id} value={user.id}>{user.name}</option>)}
+            {ownerNames.map((name) => <option key={name} value={name}>{name}</option>)}
           </select>
           <select className="field max-w-44" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
             <option value="">All statuses</option>
