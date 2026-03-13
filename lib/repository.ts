@@ -134,7 +134,8 @@ export async function saveContentItem(input: Partial<ContentItem> & { id?: strin
     status: record.status,
     content_type: record.contentType,
     campaign_id: record.campaignId,
-    owner_id: record.ownerId,
+    owner_id: record.ownerId || null,
+    owner_name: record.ownerName ?? null,
     due_date: record.dueDate,
     priority: record.priority,
     channel: record.channel,
@@ -299,6 +300,8 @@ export async function getApprovals() {
     requestedEdits: item.requested_edits,
     approvalToggle: item.approval_toggle,
     versionLabel: item.version_label,
+    links: item.links ?? [],
+    images: item.images ?? [],
     updatedAt: item.updated_at
   })) as Approval[];
 }
@@ -312,6 +315,8 @@ export async function saveApproval(input: Partial<Approval> & { id?: string }) {
     requestedEdits: input.requestedEdits ?? "",
     approvalToggle: input.approvalToggle ?? false,
     versionLabel: input.versionLabel ?? "v1",
+    links: input.links ?? [],
+    images: input.images ?? [],
     updatedAt: new Date().toISOString()
   };
 
@@ -334,6 +339,8 @@ export async function saveApproval(input: Partial<Approval> & { id?: string }) {
     requested_edits: record.requestedEdits,
     approval_toggle: record.approvalToggle,
     version_label: record.versionLabel,
+    links: record.links ?? [],
+    images: record.images ?? [],
     updated_at: record.updatedAt
   });
   return record;
@@ -444,7 +451,8 @@ function mapContent(item: any): ContentItem {
     status: item.status,
     contentType: item.content_type,
     campaignId: item.campaign_id,
-    ownerId: item.owner_id,
+    ownerId: item.owner_id ?? "",
+    ownerName: item.owner_name ?? undefined,
     dueDate: item.due_date,
     priority: item.priority,
     channel: item.channel,
