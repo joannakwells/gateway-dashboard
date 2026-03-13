@@ -113,6 +113,8 @@ export interface Approval {
   approvalToggle: boolean;
   versionLabel: string;
   updatedAt: string;
+  links?: string[];
+  images?: string[];
 }
 
 export interface WikiPage {

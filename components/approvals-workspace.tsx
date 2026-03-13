@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useRef, useMemo, useState } from "react";
+import { Link, Paperclip, X } from "lucide-react";
 import { applyContentOverrides } from "@/lib/client-overrides";
 import { statusTone } from "@/lib/utils";
 import type { Approval, Comment, ContentItem, User } from "@/lib/types";
@@ -25,10 +26,41 @@ export function ApprovalsWorkspace({
     reviewerId: users[0]?.id ?? "",
     requestedEdits: "",
     approvalToggle: false,
-    versionLabel: "v1"
+    versionLabel: "v1",
+    links: [] as string[],
+    images: [] as string[]
   });
+  const [linkInput, setLinkInput] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const filtered = useMemo(() => approvals.filter((approval) => !filter || approval.designStatus === filter), [approvals, filter]);
+
+  function addLink() {
+    const url = linkInput.trim();
+    if (!url) return;
+    setDraft((d) => ({ ...d, links: [...d.links, url] }));
+    setLinkInput("");
+  }
+
+  function removeLink(index: number) {
+    setDraft((d) => ({ ...d, links: d.links.filter((_, i) => i !== index) }));
+  }
+
+  function handleImageFiles(files: FileList | null) {
+    if (!files) return;
+    Array.from(files).forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const dataUrl = e.target?.result as string;
+        setDraft((d) => ({ ...d, images: [...d.images, dataUrl] }));
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function removeImage(index: number) {
+    setDraft((d) => ({ ...d, images: d.images.filter((_, i) => i !== index) }));
+  }
 
   async function createApproval(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -39,6 +71,8 @@ export function ApprovalsWorkspace({
     });
     const record = (await response.json()) as Approval;
     setApprovals((current) => [record, ...current]);
+    setDraft((d) => ({ ...d, links: [], images: [] }));
+    setLinkInput("");
   }
 
   async function toggleApproval(approval: Approval) {
@@ -97,6 +131,32 @@ export function ApprovalsWorkspace({
                     </div>
                   </div>
                 </div>
+                {(approval.links?.length || approval.images?.length) ? (
+                  <div className="mt-4 space-y-3">
+                    {approval.links?.length ? (
+                      <div>
+                        <p className="text-xs uppercase tracking-[0.2em] text-stone-400">Review links</p>
+                        <div className="mt-2 space-y-1">
+                          {approval.links.map((link, i) => (
+                            <a key={i} href={link} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-moss underline hover:opacity-80 truncate">
+                              <Link className="h-3 w-3 shrink-0" />{link}
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
+                    {approval.images?.length ? (
+                      <div>
+                        <p className="text-xs uppercase tracking-[0.2em] text-stone-400">Attachments</p>
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          {approval.images.map((src, i) => (
+                            <img key={i} src={src} alt={`attachment ${i + 1}`} className="h-24 w-24 rounded-xl object-cover border border-stone-100" />
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
+                  </div>
+                ) : null}
                 <div className="mt-4 flex items-center justify-between">
                   <p className="text-xs text-stone-500">Updated {approval.updatedAt}</p>
                   <button className={approval.approvalToggle ? "btn-secondary" : "btn-primary"} onClick={() => toggleApproval(approval)}>
@@ -121,6 +181,46 @@ export function ApprovalsWorkspace({
           </select>
           <input className="field" value={draft.versionLabel} onChange={(e) => setDraft({ ...draft, versionLabel: e.target.value })} placeholder="Version label" />
           <textarea className="field min-h-32" value={draft.requestedEdits} onChange={(e) => setDraft({ ...draft, requestedEdits: e.target.value })} placeholder="Requested edits" />
+
+          <div className="space-y-2">
+            <p className="text-sm font-medium text-stone-700">Review links</p>
+            <div className="flex gap-2">
+              <input className="field flex-1" placeholder="Paste URL to review" value={linkInput} onChange={(e) => setLinkInput(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addLink(); } }} />
+              <button type="button" className="btn-secondary shrink-0" onClick={addLink}>Add</button>
+            </div>
+            {draft.links.length > 0 && (
+              <div className="space-y-1">
+                {draft.links.map((link, i) => (
+                  <div key={i} className="flex items-center gap-2 rounded-xl bg-stone-50 px-3 py-2 text-sm">
+                    <Link className="h-3 w-3 shrink-0 text-stone-400" />
+                    <span className="flex-1 truncate text-stone-700">{link}</span>
+                    <button type="button" onClick={() => removeLink(i)}><X className="h-3 w-3 text-stone-400 hover:text-rose-500" /></button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <p className="text-sm font-medium text-stone-700">Images</p>
+            <button type="button" className="btn-secondary flex w-full items-center justify-center gap-2" onClick={() => fileInputRef.current?.click()}>
+              <Paperclip className="h-4 w-4" /> Upload images
+            </button>
+            <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={(e) => handleImageFiles(e.target.files)} />
+            {draft.images.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {draft.images.map((src, i) => (
+                  <div key={i} className="relative">
+                    <img src={src} alt={`upload ${i + 1}`} className="h-20 w-20 rounded-xl object-cover border border-stone-100" />
+                    <button type="button" className="absolute -right-1 -top-1 rounded-full bg-white shadow p-0.5" onClick={() => removeImage(i)}>
+                      <X className="h-3 w-3 text-stone-500" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
           <button className="btn-primary w-full">Create approval request</button>
         </form>
       </section>
