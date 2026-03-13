@@ -1,3 +1,4 @@
+import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { deleteContentItem, saveContentItem } from "@/lib/repository";
 
@@ -5,6 +6,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   const payload = await request.json();
   const { id } = await params;
   const item = await saveContentItem({ ...payload, id });
+  revalidatePath("/content");
   return NextResponse.json(item);
 }
 
