@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Search, Trash2 } from "lucide-react";
 import { formatDate, statusTone } from "@/lib/utils";
 import type { Campaign, ContentItem, User } from "@/lib/types";
@@ -32,14 +32,18 @@ const defaultItem = {
   scheduledDate: "2026-03-12"
 };
 
-export function ContentHub({ initialItems, users, campaigns }: Props) {
+export function ContentHub({ initialItems, users, campaigns: initialCampaigns }: Props) {
   const [items, setItems] = useState(initialItems);
+  const [campaigns, setCampaigns] = useState(initialCampaigns);
   const [query, setQuery] = useState("");
   const [ownerFilter, setOwnerFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [channelFilter, setChannelFilter] = useState("");
   const [draft, setDraft] = useState({ ...defaultItem });
+  const [newCampaignName, setNewCampaignName] = useState("");
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => { setItems(initialItems); }, [initialItems]);
 
   const filtered = useMemo(() => {
     return items.filter((item) => {
@@ -56,14 +60,26 @@ export function ContentHub({ initialItems, users, campaigns }: Props) {
   async function createItem(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSaving(true);
+    let campaignId = draft.campaignId;
+    if (newCampaignName.trim()) {
+      const campaignRes = await fetch("/api/campaigns", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: newCampaignName.trim() })
+      });
+      const newCampaign = (await campaignRes.json()) as Campaign;
+      setCampaigns((current) => [newCampaign, ...current]);
+      campaignId = newCampaign.id;
+    }
     const response = await fetch("/api/content", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(draft)
+      body: JSON.stringify({ ...draft, campaignId })
     });
     const item = (await response.json()) as ContentItem;
     setItems((current) => [item, ...current]);
     setDraft({ ...defaultItem });
+    setNewCampaignName("");
     setSaving(false);
   }
 
@@ -153,19 +169,22 @@ export function ContentHub({ initialItems, users, campaigns }: Props) {
                 <option key={type} value={type}>{type}</option>
               ))}
             </select>
-            <select className="field" value={draft.campaignId} onChange={(e) => setDraft({ ...draft, campaignId: e.target.value })}>
-              <option value="">No campaign</option>
-              {campaigns.map((campaign) => <option key={campaign.id} value={campaign.id}>{campaign.name}</option>)}
-            </select>
+            <div className="space-y-1">
+              <select className="field" value={draft.campaignId} onChange={(e) => { setDraft({ ...draft, campaignId: e.target.value }); setNewCampaignName(""); }}>
+                <option value="">No campaign</option>
+                {campaigns.map((campaign) => <option key={campaign.id} value={campaign.id}>{campaign.name}</option>)}
+                <option value="__new__">+ Add new campaign…</option>
+              </select>
+              {draft.campaignId === "__new__" && (
+                <input className="field" placeholder="New campaign name" value={newCampaignName} onChange={(e) => setNewCampaignName(e.target.value)} required />
+              )}
+            </div>
             <input className="field" placeholder="Owner name" value={draft.ownerName} onChange={(e) => setDraft({ ...draft, ownerName: e.target.value })} />
             <input className="field" type="date" value={draft.dueDate} onChange={(e) => setDraft({ ...draft, dueDate: e.target.value })} />
             <select className="field" value={draft.priority} onChange={(e) => setDraft({ ...draft, priority: e.target.value })}>
               {["Low", "Medium", "High", "Urgent"].map((priority) => <option key={priority} value={priority}>{priority}</option>)}
             </select>
           </div>
-          <select className="field" value={draft.channel} onChange={(e) => setDraft({ ...draft, channel: e.target.value })}>
-            {["Email", "Instagram", "Facebook", "Website", "In-store", "Print"].map((channel) => <option key={channel} value={channel}>{channel}</option>)}
-          </select>
           <textarea className="field min-h-24" placeholder="Brief / objective" value={draft.brief} onChange={(e) => setDraft({ ...draft, brief: e.target.value })} />
           <textarea className="field min-h-24" placeholder="Copy / messaging" value={draft.copy} onChange={(e) => setDraft({ ...draft, copy: e.target.value })} />
           <input className="field" placeholder="Pricing / promotion details" value={draft.pricingDetails} onChange={(e) => setDraft({ ...draft, pricingDetails: e.target.value })} />

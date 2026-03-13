@@ -4,6 +4,7 @@ import { getSupabaseServerClient, isSupabaseConfigured } from "@/lib/supabase";
 import type {
   Approval,
   CalendarEvent,
+  Campaign,
   Comment,
   ContentItem,
   DashboardData,
@@ -44,6 +45,38 @@ export async function getCampaigns() {
     endDate: item.end_date,
     ownerId: item.owner_id
   }));
+}
+
+export async function saveCampaign(input: Partial<Campaign> & { id?: string }) {
+  const record: Campaign = {
+    id: input.id ?? `c${Date.now()}`,
+    name: input.name ?? "Untitled campaign",
+    theme: input.theme ?? "",
+    startDate: input.startDate ?? todayIso(),
+    endDate: input.endDate ?? todayIso(),
+    ownerId: input.ownerId ?? db.users[0].id
+  };
+
+  if (!isSupabaseConfigured) {
+    const index = db.campaigns.findIndex((item) => item.id === record.id);
+    if (index === -1) {
+      db.campaigns.unshift(record);
+    } else {
+      db.campaigns[index] = record;
+    }
+    return clone(record);
+  }
+
+  const supabase = getSupabaseServerClient();
+  await supabase!.from("campaigns").upsert({
+    id: record.id,
+    name: record.name,
+    theme: record.theme,
+    start_date: record.startDate,
+    end_date: record.endDate,
+    owner_id: record.ownerId
+  });
+  return record;
 }
 
 export async function getContentItems() {
