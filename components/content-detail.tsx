@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { setContentOverride } from "@/lib/client-overrides";
+import { getContentOverride, setContentOverride } from "@/lib/client-overrides";
 import type { Campaign, Comment, ContentItem, Task, User } from "@/lib/types";
 
 export function ContentDetail({
@@ -18,7 +18,7 @@ export function ContentDetail({
   relatedTasks: Task[];
   comments: Comment[];
 }) {
-  const [draft, setDraft] = useState(item);
+  const [draft, setDraft] = useState(() => ({ ...item, ...getContentOverride(item.id) }));
   const [saving, setSaving] = useState(false);
   const router = useRouter();
 

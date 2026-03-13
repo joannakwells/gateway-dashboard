@@ -9,6 +9,10 @@ export function setContentOverride(id: string, data: Partial<ContentItem>) {
   overrides.set(id, data);
 }
 
+export function getContentOverride(id: string): Partial<ContentItem> | undefined {
+  return overrides.get(id);
+}
+
 export function addNewContentItem(item: ContentItem) {
   if (!newItems.find((i) => i.id === item.id)) {
     newItems.unshift(item);
