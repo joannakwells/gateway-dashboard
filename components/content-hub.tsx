@@ -18,6 +18,7 @@ const defaultItem = {
   contentType: "Email",
   campaignId: "",
   ownerId: "",
+  ownerName: "",
   dueDate: "2026-03-12",
   priority: "Medium",
   channel: "Email",
@@ -37,7 +38,7 @@ export function ContentHub({ initialItems, users, campaigns }: Props) {
   const [ownerFilter, setOwnerFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [channelFilter, setChannelFilter] = useState("");
-  const [draft, setDraft] = useState({ ...defaultItem, ownerId: users[1]?.id ?? users[0]?.id ?? "" });
+  const [draft, setDraft] = useState({ ...defaultItem });
   const [saving, setSaving] = useState(false);
 
   const filtered = useMemo(() => {
@@ -62,7 +63,7 @@ export function ContentHub({ initialItems, users, campaigns }: Props) {
     });
     const item = (await response.json()) as ContentItem;
     setItems((current) => [item, ...current]);
-    setDraft({ ...defaultItem, ownerId: users[1]?.id ?? users[0]?.id ?? "" });
+    setDraft({ ...defaultItem });
     setSaving(false);
   }
 
@@ -115,7 +116,7 @@ export function ContentHub({ initialItems, users, campaigns }: Props) {
                   </td>
                   <td className="px-5 py-4"><span className={`badge ${statusTone(item.status)}`}>{item.status}</span></td>
                   <td className="px-5 py-4">{item.contentType}</td>
-                  <td className="px-5 py-4">{users.find((user) => user.id === item.ownerId)?.name ?? "Unknown"}</td>
+                  <td className="px-5 py-4">{item.ownerName || users.find((user) => user.id === item.ownerId)?.name ?? "—"}</td>
                   <td className="px-5 py-4">{formatDate(item.dueDate)}</td>
                   <td className="px-5 py-4">{item.channel}</td>
                   <td className="px-5 py-4"><span className={`badge ${statusTone(item.priority)}`}>{item.priority}</span></td>
@@ -156,9 +157,7 @@ export function ContentHub({ initialItems, users, campaigns }: Props) {
               <option value="">No campaign</option>
               {campaigns.map((campaign) => <option key={campaign.id} value={campaign.id}>{campaign.name}</option>)}
             </select>
-            <select className="field" value={draft.ownerId} onChange={(e) => setDraft({ ...draft, ownerId: e.target.value })}>
-              {users.map((user) => <option key={user.id} value={user.id}>{user.name}</option>)}
-            </select>
+            <input className="field" placeholder="Owner name" value={draft.ownerName} onChange={(e) => setDraft({ ...draft, ownerName: e.target.value })} />
             <input className="field" type="date" value={draft.dueDate} onChange={(e) => setDraft({ ...draft, dueDate: e.target.value })} />
             <select className="field" value={draft.priority} onChange={(e) => setDraft({ ...draft, priority: e.target.value })}>
               {["Low", "Medium", "High", "Urgent"].map((priority) => <option key={priority} value={priority}>{priority}</option>)}

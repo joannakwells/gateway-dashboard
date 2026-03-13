@@ -68,6 +68,7 @@ export interface ContentItem {
   contentType: ContentType;
   campaignId?: string;
   ownerId: string;
+  ownerName?: string;
   dueDate: string;
   priority: Priority;
   channel: Channel;

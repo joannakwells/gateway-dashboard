@@ -61,9 +61,7 @@ export function ContentDetail({
           </label>
           <label className="space-y-2">
             <span className="text-sm font-medium text-stone-700">Owner</span>
-            <select className="field" value={draft.ownerId} onChange={(e) => setDraft({ ...draft, ownerId: e.target.value })}>
-              {users.map((user) => <option key={user.id} value={user.id}>{user.name}</option>)}
-            </select>
+            <input className="field" placeholder="Owner name" value={draft.ownerName ?? ""} onChange={(e) => setDraft({ ...draft, ownerName: e.target.value })} />
           </label>
           <label className="space-y-2">
             <span className="text-sm font-medium text-stone-700">Due date</span>
