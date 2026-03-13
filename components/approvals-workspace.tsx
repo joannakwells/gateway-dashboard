@@ -149,9 +149,15 @@ export function ApprovalsWorkspace({
                       <div>
                         <p className="text-xs uppercase tracking-[0.2em] text-stone-400">Attachments</p>
                         <div className="mt-2 flex flex-wrap gap-2">
-                          {approval.images.map((src, i) => (
-                            <img key={i} src={src} alt={`attachment ${i + 1}`} className="h-24 w-24 rounded-xl object-cover border border-stone-100" />
-                          ))}
+                          {approval.images.map((src, i) =>
+                            src.startsWith("data:application/pdf") ? (
+                              <a key={i} href={src} target="_blank" rel="noopener noreferrer" className="flex h-24 w-24 items-center justify-center rounded-xl border border-stone-100 bg-stone-50 text-xs text-stone-500 hover:bg-stone-100">
+                                <span className="text-center leading-tight px-2">PDF {i + 1}</span>
+                              </a>
+                            ) : (
+                              <img key={i} src={src} alt={`attachment ${i + 1}`} className="h-24 w-24 rounded-xl object-cover border border-stone-100" />
+                            )
+                          )}
                         </div>
                       </div>
                     ) : null}
@@ -204,14 +210,18 @@ export function ApprovalsWorkspace({
           <div className="space-y-2">
             <p className="text-sm font-medium text-stone-700">Images</p>
             <button type="button" className="btn-secondary flex w-full items-center justify-center gap-2" onClick={() => fileInputRef.current?.click()}>
-              <Paperclip className="h-4 w-4" /> Upload images
+              <Paperclip className="h-4 w-4" /> Upload images or PDFs
             </button>
-            <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={(e) => handleImageFiles(e.target.files)} />
+            <input ref={fileInputRef} type="file" accept="image/*,application/pdf" multiple className="hidden" onChange={(e) => handleImageFiles(e.target.files)} />
             {draft.images.length > 0 && (
               <div className="flex flex-wrap gap-2">
                 {draft.images.map((src, i) => (
                   <div key={i} className="relative">
-                    <img src={src} alt={`upload ${i + 1}`} className="h-20 w-20 rounded-xl object-cover border border-stone-100" />
+                    {src.startsWith("data:application/pdf") ? (
+                      <div className="flex h-20 w-20 items-center justify-center rounded-xl border border-stone-100 bg-stone-50 text-xs text-stone-500">PDF {i + 1}</div>
+                    ) : (
+                      <img src={src} alt={`upload ${i + 1}`} className="h-20 w-20 rounded-xl object-cover border border-stone-100" />
+                    )}
                     <button type="button" className="absolute -right-1 -top-1 rounded-full bg-white shadow p-0.5" onClick={() => removeImage(i)}>
                       <X className="h-3 w-3 text-stone-500" />
                     </button>
