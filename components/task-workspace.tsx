@@ -51,8 +51,8 @@ export function TaskWorkspace({
   }
 
   async function moveTask(task: Task, status: Task["status"]) {
-    const response = await fetch("/api/tasks", {
-      method: "POST",
+    const response = await fetch(`/api/tasks/${task.id}`, {
+      method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ...task, status })
     });

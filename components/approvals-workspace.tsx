@@ -41,7 +41,7 @@ export function ApprovalsWorkspace({
 
   async function toggleApproval(approval: Approval) {
     const response = await fetch("/api/approvals", {
-      method: "POST",
+      method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         ...approval,

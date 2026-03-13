@@ -1,23 +1,25 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { WikiPage } from "@/lib/types";
 
 export function WikiDetail({ page, pages }: { page: WikiPage; pages: WikiPage[] }) {
   const [draft, setDraft] = useState(page);
   const [saving, setSaving] = useState(false);
-  const router = useRouter();
 
   async function save() {
     setSaving(true);
-    await fetch(`/api/wiki/${page.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(draft)
-    });
-    setSaving(false);
-    router.refresh();
+    try {
+      const response = await fetch(`/api/wiki/${page.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(draft)
+      });
+      const saved = await response.json() as WikiPage;
+      setDraft(saved);
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (

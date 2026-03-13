@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import type { Campaign, Comment, ContentItem, Task, User } from "@/lib/types";
 
 export function ContentDetail({
@@ -19,17 +18,20 @@ export function ContentDetail({
 }) {
   const [draft, setDraft] = useState(item);
   const [saving, setSaving] = useState(false);
-  const router = useRouter();
 
   async function save() {
     setSaving(true);
-    await fetch(`/api/content/${item.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(draft)
-    });
-    setSaving(false);
-    router.refresh();
+    try {
+      const response = await fetch(`/api/content/${item.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(draft)
+      });
+      const saved = await response.json() as typeof draft;
+      setDraft(saved);
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (

@@ -69,6 +69,7 @@ export async function saveContentItem(input: Partial<ContentItem> & { id?: strin
     contentType: input.contentType ?? "Email",
     campaignId: input.campaignId,
     ownerId: input.ownerId ?? db.users[1].id,
+    ownerName: input.ownerName,
     dueDate: input.dueDate ?? todayIso(),
     priority: input.priority ?? "Medium",
     channel: input.channel ?? "Email",

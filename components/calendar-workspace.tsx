@@ -88,7 +88,7 @@ export function CalendarWorkspace({
     }
 
     const response = await fetch("/api/calendar", {
-      method: "POST",
+      method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ...nextEvent, date })
     });
